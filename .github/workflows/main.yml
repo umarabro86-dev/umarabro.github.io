@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parrots Info</title>
+  <style>
+    body {font-family: Arial, sans-serif;margin:0;padding:0;background:#f5f5f5;color:#333;}
+    header {background:#4caf50;color:white;padding:1rem;text-align:center;}
+    nav {display:flex;justify-content:center;gap:1rem;background:#388e3c;padding:.5rem;}
+    nav button {background:white;border:none;padding:.5rem 1rem;border-radius:5px;cursor:pointer;}
+    section {padding:1rem;}
+    .species {display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;}
+    .card {background:white;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);padding:1rem;}
+    .timer {margin-top:1rem;padding:1rem;background:white;border-radius:8px;}
+    .progress {background:#ddd;border-radius:4px;overflow:hidden;height:10px;margin-top:.5rem;}
+    .bar {background:#4caf50;height:10px;width:0%;}
+    footer {text-align:center;padding:1rem;background:#4caf50;color:white;margin-top:2rem;}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Parrots Info</h1>
+    <p>Learn about parrots species and track egg hatching!</p>
+  </header>
+  <nav>
+    <button onclick="showSection('home')">Home</button>
+    <button onclick="showSection('species')">Species</button>
+    <button onclick="showSection('timer')">Egg Hatching Timer</button>
+  </nav>
+
+  <section id="home">
+    <h2>Welcome</h2>
+    <p>This website provides information on various parrot species and a tool to track egg incubation and hatching times.</p>
+  </section>
+
+  <section id="species" style="display:none;">
+    <h2>Common Parrot Species</h2>
+    <div class="species" id="species-list"></div>
+  </section>
+
+  <section id="timer" style="display:none;">
+    <h2>Egg Hatching Timer</h2>
+    <label>Laying Date: <input type="date" id="laying-date"></label>
+    <label>Egg Count: <input type="number" id="egg-count" min="1" max="10" value="1"></label>
+    <button onclick="startTimer()">Start Timer</button>
+    <div class="timer" id="timer-output"></div>
+  </section>
+
+  <footer>&copy; 2025 Parrots Info</footer>
+
+  <script>
+    const speciesData = [
+      {name:"African Grey",incubation:28},
+      {name:"Budgerigar",incubation:18},
+      {name:"Cockatiel",incubation:21},
+      {name:"Macaw",incubation:26},
+      {name:"Lovebird",incubation:23},
+    ];
+
+    function loadSpecies(){
+      const container=document.getElementById('species-list');
+      container.innerHTML='';
+      speciesData.forEach(sp=>{
+        const card=document.createElement('div');
+        card.className='card';
+        card.innerHTML=`<h3>${sp.name}</h3>
+          <p>Typical incubation: ${sp.incubation} days</p>`;
+        container.appendChild(card);
+      });
+    }
+    loadSpecies();
+
+    function showSection(id){
+      document.querySelectorAll('section').forEach(sec=>sec.style.display='none');
+      document.getElementById(id).style.display='block';
+    }
+
+    let timerInterval;
+    function startTimer(){
+      clearInterval(timerInterval);
+      const layingDate=new Date(document.getElementById('laying-date').value);
+      const eggCount=parseInt(document.getElementById('egg-count').value);
+      if(!layingDate||isNaN(eggCount)){alert('Please enter valid date and egg count');return;}
+      const incubation=26; // average incubation
+      const output=document.getElementById('timer-output');
+      timerInterval=setInterval(()=>{
+        const now=new Date();
+        const diff=now-layingDate;
+        const days=Math.floor(diff/(1000*60*60*24));
+        const hours=Math.floor((diff/(1000*60*60))%24);
+        const minutes=Math.floor((diff/(1000*60))%60);
+        const seconds=Math.floor((diff/1000)%60);
+        let html=`<p>Elapsed: ${days}d ${hours}h ${minutes}m ${seconds}s</p>`;
+        for(let i=0;i<eggCount;i++){
+          const hatchDate=new Date(layingDate);
+          hatchDate.setDate(layingDate.getDate()+incubation+i);
+          const total=(hatchDate-layingDate);
+          const progress=Math.min(100,(diff/total)*100).toFixed(1);
+          html+=`<div>Egg ${i+1} hatches on ${hatchDate.toDateString()}
+            <div class="progress"><div class="bar" style="width:${progress}%"></div></div></div>`;
+        }
+        output.innerHTML=html;
+      },1000);
+    }
+  </script>
+</body>
+</html>
